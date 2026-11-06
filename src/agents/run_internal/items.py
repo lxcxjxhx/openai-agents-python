@@ -64,6 +64,7 @@ __all__ = [
     "TOOL_CALL_SESSION_TITLE_KEY",
     "apply_reasoning_item_id_policy",
     "copy_input_items",
+    "drop_leading_orphaned_outputs",
     "drop_orphan_function_calls",
     "ensure_input_item_format",
     "prepare_model_input_items",
@@ -342,6 +343,28 @@ def _drop_reasoning_items_preceding_dropped_calls(
             break
     excluded = dropped_indexes | drop_reasoning
     return [entry for idx, entry in enumerate(items) if idx not in excluded]
+
+
+def drop_leading_orphaned_outputs(items: list[TResponseInputItem]) -> list[TResponseInputItem]:
+    """Start a limited session window on an item that does not need a cut-off predecessor.
+
+    A window taken from stored history can begin inside a model response: the
+    reasoning item that opened the response falls outside the window while the
+    answer it preceded stays, and the Responses API rejects that answer
+    ("Item 'msg_...' of type 'message' was provided without its required
+    'reasoning' item"). Leading items that carry a server-assigned id are those
+    answers, so the window starts after them. A reasoning item may open a window
+    on its own, and an item without an id is caller input, which ends the scan.
+    """
+    start = 0
+    for index, entry in enumerate(items):
+        if not isinstance(entry, dict):
+            break
+        item_id = entry.get("id")
+        if not isinstance(item_id, str) or not item_id or entry.get("type") == "reasoning":
+            break
+        start = index + 1
+    return items[start:]
 
 
 def ensure_input_item_format(item: TResponseInputItem) -> TResponseInputItem:

@@ -64,6 +64,7 @@ from .items import (
     copy_input_items,
     deduplicate_input_items_preferring_latest,
     digest_input_item,
+    drop_leading_orphaned_outputs,
     drop_orphan_function_calls,
     ensure_input_item_format,
     ensure_nested_history_run_item_occurrence_key,
@@ -577,6 +578,11 @@ async def prepare_input_with_session(
             prune_history_indexes,
         )
     prepared_as_inputs = [ensure_input_item_format(item) for item in prepared_items_raw]
+    if output_pruning_indexes:
+        # A limit can cut the window inside a stored model response; starting on the answer
+        # it kept would send that answer without the reasoning item that opened it. Dropping
+        # those first lets the orphan pass below remove the outputs of a dropped call.
+        prepared_as_inputs = drop_leading_orphaned_outputs(prepared_as_inputs)
     filtered = drop_orphan_function_calls(
         prepared_as_inputs,
         pruning_indexes=prune_history_indexes,
