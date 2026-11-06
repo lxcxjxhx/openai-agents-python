@@ -2,9 +2,9 @@
 
 from collections.abc import Callable
 from types import FunctionType
-from typing import Any
+from typing import Any, get_type_hints
 
-from typing_extensions import TypeAliasType
+from typing_extensions import TypeAliasType, is_typeddict
 
 
 def _new_type_alias(name: str, value: Any, constructor: Callable[[str, Any], Any]) -> Any:
@@ -24,6 +24,14 @@ def type_alias_constructor(public_module: str) -> Callable[[str, Any], Any]:
 def preserve_module_identity(namespace: dict[str, Any], public_module: str) -> None:
     """Keep existing owners for definitions and their method descriptors."""
     implementation_module = namespace["__name__"]
+    # Resolve every schema before changing any base class's deferred annotations.
+    schemas = [
+        (value, get_type_hints(value, globalns=namespace, localns=namespace, include_extras=True))
+        for value in namespace.values()
+        if is_typeddict(value) and value.__module__ == implementation_module
+    ]
+    for value, annotations in schemas:
+        value.__annotations__ = annotations
 
     def restore(value: Any) -> None:
         if isinstance(value, (staticmethod, classmethod)):
