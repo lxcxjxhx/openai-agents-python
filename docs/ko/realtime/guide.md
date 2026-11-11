@@ -143,7 +143,7 @@ runner = RealtimeRunner(
 
 WebSocket을 통한 Realtime 세션에서 `gpt-transcribe`은 커밋된 오디오 턴 이후 전사를 시작해야 하거나 애플리케이션에 감지된 언어 출력이 필요한 경우에만 사용하세요. 모델은 이전에 전사된 턴을 자동으로 맥락으로 사용합니다. `gpt-transcribe` 완료 이벤트는 `languages` 출력 필드에 감지된 언어를 보고합니다. 이 출력 필드는 위에 표시된 예상 언어 입력 `gpt-live-transcribe`와 다릅니다.
 
-`audio.input.turn_detection`을 `None`로 설정하면 자동 턴 감지가 비활성화됩니다. 그러면 애플리케이션이 [수동 응답 제어](#수동-응답-제어)에 설명된 대로 오디오 턴을 커밋하고 응답 생성을 제어해야 합니다. 모델 동작, 검증 규칙 및 지연 시간 지침은 OpenAI API의 [Realtime 전사 가이드](https://developers.openai.com/api/docs/guides/realtime-transcription)를 참조하세요.
+`audio.input.turn_detection`을 `None`로 설정하면 자동 턴 감지가 비활성화됩니다. 그러면 애플리케이션이 [수동 응답 제어](#manual-response-control)에 설명된 대로 오디오 턴을 커밋하고 응답 생성을 제어해야 합니다. 모델 동작, 검증 규칙 및 지연 시간 지침은 OpenAI API의 [Realtime 전사 가이드](https://developers.openai.com/api/docs/guides/realtime-transcription)를 참조하세요.
 
 ## 입력 및 출력 {#inputs-and-outputs}
 
